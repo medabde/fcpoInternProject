@@ -1,0 +1,117 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:minHeight="100dp"
+
+    >
+    <RelativeLayout
+        android:id="@+id/infos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:minHeight="100dp"
+        android:paddingLeft="10dp"
+        >
+
+
+        <TextView
+            android:id="@+id/namePlace"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:text="Nom :"
+            android:textStyle="bold"
+            android:layout_marginTop="17dp"
+
+            />
+        <TextView
+            android:id="@+id/typePlace"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:text="Type :"
+            android:textStyle="bold"
+            android:layout_below="@id/namePlace"
+            android:layout_marginTop="17dp"
+            />
+        <TextView
+            android:id="@+id/datePlace"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:text="Date :"
+            android:textStyle="bold"
+            android:layout_below="@id/typePlace"
+            android:layout_marginTop="17dp"
+            />
+        <TextView
+            android:id="@+id/prixPlace"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:text="Prix(dh) :"
+            android:textStyle="bold"
+            android:layout_below="@id/datePlace"
+            android:layout_marginTop="17dp"
+            />
+
+
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:inputType="text"
+            android:textStyle="bold"
+            android:layout_toRightOf="@id/namePlace"
+            />
+
+        <EditText
+            android:id="@+id/type"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:inputType="textMultiLine"
+            android:textStyle="bold"
+            android:layout_toRightOf="@id/typePlace"
+            android:layout_below="@id/namePlace"
+            />
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:layout_marginTop="17dp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_toRightOf="@id/datePlace"
+            android:layout_below="@id/typePlace"
+            />
+        <EditText
+            android:id="@+id/prix"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="17dp"
+            android:inputType="numberDecimal"
+            android:textStyle="bold"
+            android:layout_toRightOf="@id/prixPlace"
+            android:layout_below="@id/datePlace"
+            />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/ticketPic"
+        android:layout_width="match_parent"
+        android:layout_height="700dp"
+        android:layout_marginTop="270dp"
+        android:layout_gravity="bottom"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        >
+
+    </ImageView>
+
+</RelativeLayout>

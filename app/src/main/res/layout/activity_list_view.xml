@@ -1,0 +1,89 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/userListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="100dp"
+    android:paddingLeft="10dp"
+    android:paddingTop="10dp"
+    >
+
+    <TextView
+        android:id="@+id/namePlace"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:textSize="17dp"
+        android:text="Nom :"
+        android:textStyle="bold"
+
+        />
+    <TextView
+        android:id="@+id/typePlace"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:textSize="17dp"
+        android:text="Type :"
+        android:textStyle="bold"
+        android:layout_below="@id/namePlace"
+        />
+    <TextView
+        android:id="@+id/datePlace"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:textSize="17dp"
+        android:text="Date :"
+        android:textStyle="bold"
+        android:layout_below="@id/typePlace"
+        />
+    <TextView
+        android:id="@+id/prixPlace"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:textSize="17dp"
+        android:text="Prix(dh) :"
+        android:textStyle="bold"
+        android:layout_below="@id/datePlace"
+        />
+
+
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/namePlace"
+        />
+
+    <TextView
+        android:id="@+id/type"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/typePlace"
+        android:layout_below="@id/namePlace"
+        />
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textSize="17dp"
+        android:text="texts test"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/datePlace"
+        android:layout_below="@id/typePlace"
+        />
+    <TextView
+        android:id="@+id/prix"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textSize="17dp"
+        android:text="texts test"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/prixPlace"
+        android:layout_below="@id/datePlace"
+        />
+
+</RelativeLayout>
