@@ -1,7 +1,9 @@
 package com.example.drawerapp;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.ActionBar;
@@ -34,12 +37,24 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.drawerapp.Login.sharedPref;
 import static java.lang.System.exit;
 
 public class MainActivity extends AppCompatActivity {
@@ -56,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        new RetrieveData().execute();
 
         listView=findViewById(R.id.ticket_list);
 
@@ -89,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                             case DialogInterface.BUTTON_POSITIVE:
                                 //Yes button clicked
                                 int id = (int) adapterView.getItemIdAtPosition(b);
+                                new delete().execute(tickets.get(id).getId()+"");
                                 tickets.remove(id);
                                 adapter.notifyDataSetChanged();
                                 break;
@@ -123,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(myIntent);
             }
         });
-
 
 
 
@@ -175,5 +192,138 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 2000);
     }
+
+
+
+
+
+
+
+
+    public class RetrieveData extends AsyncTask<String,Void,String> {
+
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try {
+                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/getAllTickets.php");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+
+            try {
+                JSONObject object = new JSONObject(s);
+                JSONArray arr = object.getJSONArray("data");
+                for (int i = 0; i < arr.length(); i++) {
+                    Ticket ticket=new Ticket();
+                    ticket.setId(arr.getJSONObject(i).getInt("idTicket"));
+                    ticket.setIdUser(arr.getJSONObject(i).getInt("idUser"));
+                    ticket.setName(arr.getJSONObject(i).getString("nom"));
+                    ticket.setType(arr.getJSONObject(i).getString("type"));
+                    String date=arr.getJSONObject(i).getString("date");
+                    SimpleDateFormat mydate=new SimpleDateFormat("yyyy-MM-dd");
+                    ticket.setDate(mydate.parse(date));
+                    ticket.setPrix(Double.valueOf(arr.getJSONObject(i).getString("price").trim()));
+
+
+                    if(ticket.getIdUser()==sharedPref.getInt("idUser",-1)){
+                        tickets.add(ticket);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+
+    public class delete extends AsyncTask<String,Void,String> {
+
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try {
+                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/removeTicket.php?idTicket="+urls[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Toast.makeText(MainActivity.this, "Ticket deleted", Toast.LENGTH_SHORT).show();
+
+//            try {
+//                JSONObject object = new JSONObject(s);
+//                JSONArray arr = object.getJSONArray("data");
+//                for (int i = 0; i < arr.length(); i++) {
+//                    Ticket ticket=new Ticket();
+//                    ticket.setId(arr.getJSONObject(i).getInt("idTicket"));
+//                    ticket.setName(arr.getJSONObject(i).getString("nom"));
+//                    ticket.setType(arr.getJSONObject(i).getString("type"));
+//                    String date=arr.getJSONObject(i).getString("date");
+//                    SimpleDateFormat mydate=new SimpleDateFormat("yyyy-MM-dd");
+//                    ticket.setDate(mydate.parse(date));
+//                    ticket.setPrix(Double.valueOf(arr.getJSONObject(i).getString("price").trim()));
+//                    tickets.add(ticket);
+//                }
+//                adapter.notifyDataSetChanged();
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+        }
+    }
+
+
+
+
+
+
+
+
 
 }

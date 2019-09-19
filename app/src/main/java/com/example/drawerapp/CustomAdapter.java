@@ -34,11 +34,13 @@ public class CustomAdapter extends ArrayAdapter<Ticket> {
         TextView type = convertView.findViewById(R.id.type);
         TextView date = convertView.findViewById(R.id.date);
         TextView prix = convertView.findViewById(R.id.prix);
+        ImageView image = convertView.findViewById(R.id.ticketPic);
 
         name.setText(ticket.getName());
         type.setText(ticket.getType());
         date.setText(ticket.getDate());
         prix.setText(ticket.getPrix()+"");
+        image.setImageBitmap(ticket.getPic());
 
         return convertView;
     }

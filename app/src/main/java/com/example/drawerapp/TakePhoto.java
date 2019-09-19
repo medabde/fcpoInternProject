@@ -9,8 +9,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.Image;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
@@ -25,12 +26,26 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static com.example.drawerapp.Login.sharedPref;
 import static com.example.drawerapp.MainActivity.adapter;
 import static com.example.drawerapp.MainActivity.tickets;
+import org.jibble.simpleftp.*;
 
 
 public class TakePhoto extends AppCompatActivity {
@@ -41,8 +56,10 @@ public class TakePhoto extends AppCompatActivity {
     CameraSource mCameraSource;
     String text ="";
     public static Bitmap pic;
+    final Ticket ticket = new Ticket();
+    private FTPClientFunctions ftpclient = null;
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "TakePhoto";
     private static final int requestPermissionID = 101;
 
     @Override
@@ -51,10 +68,14 @@ public class TakePhoto extends AppCompatActivity {
         setContentView(R.layout.activity_take_photo);
 
 
+        ftpclient = new FTPClientFunctions();
+
         mCameraView = findViewById(R.id.surfaceView);
         mTextView = findViewById(R.id.text_view);
         mButton = findViewById(R.id.getText);
         startCameraSource();
+
+
     }
 
 
@@ -65,13 +86,12 @@ public class TakePhoto extends AppCompatActivity {
 
     }
 
+
     public void saveText(View view){
         if (text == "") {
             Toast.makeText(TakePhoto.this, "You can't save an empty text", Toast.LENGTH_LONG).show();
 
         }else{
-
-            final Ticket ticket = new Ticket();
 
             mCameraSource.takePicture(null, new CameraSource.PictureCallback() {
                 @Override
@@ -93,14 +113,33 @@ public class TakePhoto extends AppCompatActivity {
                         ticket.setPic(rotatedBitmap);
 
 
+                        File filesDir = TakePhoto.this.getFilesDir();
+                        File imageFile = new File(filesDir, "hello22.jpg");
+
+                        OutputStream os;
+                        try {
+                            os = new FileOutputStream(imageFile);
+                            rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                            os.flush();
+                            os.close();
+                            new sendPic().execute(imageFile.getAbsolutePath(),imageFile.getName());
+                        } catch (Exception e) {
+                            Log.d(TAG, "Error writing bitmap", e);
+                        }
+
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                         Toast.makeText(TakePhoto.this, e.toString(), Toast.LENGTH_SHORT).show();
                     }
+
                 }
             });
 
 
+            int idUserr = sharedPref.getInt("idUser",-1);
+            ticket.setIdUser(idUserr);
             ticket.setName("UNKNOWN");
             ticket.setDate(new Date());
             ticket.setPrix(0);
@@ -110,13 +149,14 @@ public class TakePhoto extends AppCompatActivity {
             String mot="";
 
             for (int i = 0; i < text.length() ; i++) {
-                mot = mot +text.charAt(i);
-                if (text.charAt(i)==' ' || text.charAt(i) == '\n' || text.charAt(i)=='-' || text.charAt(i)==',' || text.charAt(i)==':' || text.charAt(i)=='.'){
+                mot = mot + text.charAt(i);
+                if (text.charAt(i) == ' ' || text.charAt(i) == '\n' || text.charAt(i) == '-' || text.charAt(i) == ',' || text.charAt(i) == ':' || text.charAt(i) == '.') {
                     str.add(mot.toLowerCase().trim());
-                    mot ="";
+                    mot = "";
                 }
             }
-            ticket.setName(str.get(0)+" "+str.get(1));
+
+            if (str.size()>=2) ticket.setName(str.get(0)+" "+str.get(1));
 
 
 
@@ -133,9 +173,7 @@ public class TakePhoto extends AppCompatActivity {
                 if (nmbrs.get(i)>ticket.getPrix()) ticket.setPrix(nmbrs.get(i));
             }
 
-
-            tickets.add(ticket);
-            adapter.notifyDataSetChanged();
+            new RetrieveData().execute(ticket.getName(),ticket.getType(),ticket.getDate(),ticket.getPrix()+"",ticket.getIdUser()+"");
             finish();
         }
     }
@@ -259,4 +297,106 @@ public class TakePhoto extends AppCompatActivity {
             });
         }
     }
+
+
+    public class RetrieveData extends AsyncTask<String,Void,String> {
+
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try {
+                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/addTicket.php?nom="+urls[0]+"&type="+urls[1]+"&date="+urls[2]+"&prix="+urls[3]+"&idUser="+urls[4]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            int id=-1;
+
+            try {
+                JSONObject object = (JSONObject) new JSONTokener(s).nextValue();
+                id =object.getInt("idTicket");
+                if (id==-1) Toast.makeText(TakePhoto.this, "error while saving to server...", Toast.LENGTH_SHORT).show();
+                else {
+                    ticket.setId(id);
+                    tickets.add(ticket);
+                    adapter.notifyDataSetChanged();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+    public class sendPic extends AsyncTask<String,Void,String> {
+
+        byte[] mybytes;
+
+        public sendPic(byte[] bytes){
+            this.mybytes=bytes;
+        }
+        public sendPic() {
+        }
+
+
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+          //  try {
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        boolean status = false;
+                        // host – your FTP address
+                        // username & password – for your secured login
+                        // 21 default gateway for FTP
+                        status = ftpclient.ftpConnect("ftp.fcpo.ma", "tickets@fcpo.ma", "FCPO2019@", 21);
+                        if (status) {
+                            Log.d(TAG, "Connection Success");
+                        } else {
+                            Log.d(TAG, "Connection failed");
+                        }
+                    }
+                }).start();
+
+
+                boolean bool =ftpclient.ftpUpload(urls[0],urls[1],"/",TakePhoto.this);
+//            }
+//            catch(Exception e) {
+//                Log.e("ERROR", e.getMessage(), e);
+//                return null;
+//            }
+            return bool+"";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Toast.makeText(TakePhoto.this, s, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 }

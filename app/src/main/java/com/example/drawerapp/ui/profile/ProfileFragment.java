@@ -45,6 +45,8 @@ public class ProfileFragment extends Fragment {
                     public void onClick(View view) {
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.remove("isLoggedIn");
+                        editor.remove("idUser");
+                        editor.putInt("idUser",-1);
                         editor.putBoolean("isLoggedIn",false);
                         editor.commit();
 

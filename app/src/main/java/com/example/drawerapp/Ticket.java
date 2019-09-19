@@ -8,23 +8,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Ticket {
+    private int id;
+    private int idUser;
     private String name;
     private String type;
     private Date date;
     private double prix;
     private Bitmap pic;
 
-
-    public Ticket(){
-
-    }
-
-    public Ticket(String name, String type, Date date, double prix) {
-        this.name = name;
-        this.type = type;
-        this.date = date;
-        this.prix = prix;
-    }
 
     public String getName() {
         return name;
@@ -43,7 +34,7 @@ public class Ticket {
     }
 
     public String getDate() {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm dd/MM/yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         return dateFormat.format(date);
     }
 
@@ -65,5 +56,21 @@ public class Ticket {
 
     public void setPic(Bitmap pic) {
         this.pic = pic;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(int idUser) {
+        this.idUser = idUser;
     }
 }
