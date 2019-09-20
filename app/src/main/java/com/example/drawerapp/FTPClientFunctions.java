@@ -84,13 +84,14 @@ public class FTPClientFunctions {
     // Method to change working directory:
 
     public boolean ftpChangeDirectory(String directory_path) {
+        boolean res=false;
         try {
-            mFTPClient.changeWorkingDirectory(directory_path);
+            res =mFTPClient.changeWorkingDirectory(directory_path);
         } catch (Exception e) {
             Log.d(TAG, "Error: could not change directory to " + directory_path);
         }
 
-        return false;
+        return res;
     }
 
     // Method to list all files in a directory:
@@ -154,7 +155,7 @@ public class FTPClientFunctions {
             boolean status = mFTPClient.deleteFile(filePath);
             return status;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(TAG, String.valueOf(e));
         }
 
         return false;
@@ -211,9 +212,10 @@ public class FTPClientFunctions {
             FileInputStream srcFileStream = new FileInputStream(srcFilePath);
 
             // change working directory to the destination directory
-            // if (ftpChangeDirectory(desDirectory)) {
-            status = mFTPClient.storeFile(desFileName, srcFileStream);
-            // }
+             if (ftpChangeDirectory(desDirectory)) {
+                status = mFTPClient.storeFile(desFileName, srcFileStream);
+             }
+            //status = mFTPClient.storeFile(desFileName, srcFileStream);
 
             srcFileStream.close();
 

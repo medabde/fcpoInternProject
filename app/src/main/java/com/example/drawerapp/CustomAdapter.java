@@ -1,6 +1,8 @@
 package com.example.drawerapp;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class CustomAdapter extends ArrayAdapter<Ticket> {
@@ -40,7 +47,13 @@ public class CustomAdapter extends ArrayAdapter<Ticket> {
         type.setText(ticket.getType());
         date.setText(ticket.getDate());
         prix.setText(ticket.getPrix()+"");
-        image.setImageBitmap(ticket.getPic());
+
+
+        Picasso.get()
+                .load("https://tickets.fcpo.ma"+ticket.getPicURL())
+                .placeholder(R.drawable.ic_photo_black_24dp)
+                .resize(100,100)
+                .into(image);
 
         return convertView;
     }

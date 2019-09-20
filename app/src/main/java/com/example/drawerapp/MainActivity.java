@@ -65,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
     public static CustomAdapter adapter;
     public static ArrayList<Ticket> tickets= new ArrayList<>();
     public static int id101;
+    public static FTPClientFunctions ftpclient=new FTPClientFunctions();
+
+
+    public static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                             case DialogInterface.BUTTON_POSITIVE:
                                 //Yes button clicked
                                 int id = (int) adapterView.getItemIdAtPosition(b);
-                                new delete().execute(tickets.get(id).getId()+"");
+                                new delete().execute(tickets.get(id).getId()+"",id+"");
                                 tickets.remove(id);
                                 adapter.notifyDataSetChanged();
                                 break;
@@ -268,7 +273,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... urls) {
+
             try {
+
                 URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/removeTicket.php?idTicket="+urls[0]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
@@ -293,30 +300,50 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            Toast.makeText(MainActivity.this, "Ticket deleted", Toast.LENGTH_SHORT).show();
-
-//            try {
-//                JSONObject object = new JSONObject(s);
-//                JSONArray arr = object.getJSONArray("data");
-//                for (int i = 0; i < arr.length(); i++) {
-//                    Ticket ticket=new Ticket();
-//                    ticket.setId(arr.getJSONObject(i).getInt("idTicket"));
-//                    ticket.setName(arr.getJSONObject(i).getString("nom"));
-//                    ticket.setType(arr.getJSONObject(i).getString("type"));
-//                    String date=arr.getJSONObject(i).getString("date");
-//                    SimpleDateFormat mydate=new SimpleDateFormat("yyyy-MM-dd");
-//                    ticket.setDate(mydate.parse(date));
-//                    ticket.setPrix(Double.valueOf(arr.getJSONObject(i).getString("price").trim()));
-//                    tickets.add(ticket);
-//                }
-//                adapter.notifyDataSetChanged();
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            } catch (ParseException e) {
-//                e.printStackTrace();
-//            }
+            if (!s.isEmpty()) Toast.makeText(MainActivity.this, "Ticket Deleted", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(MainActivity.this, "ERROR while deleted ticket", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+
+
+    public class deletePic extends AsyncTask<String,Void,String> {
+
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+            try {
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        boolean status = false;
+                        status = ftpclient.ftpConnect("ftp.fcpo.ma", "tickets@fcpo.ma", "FCPO2019@", 21);
+                        if (status) {
+                            Log.d(TAG, "Connection Success");
+                        } else {
+                            Log.d(TAG, "Connection failed");
+                        }
+                    }
+                }).start();
+            } catch(Exception e) {
+                Log.e(TAG, e.getMessage(), e);
+                return null;
+            }
+
+            String res=ftpclient.ftpRemoveFile("/phpAPI/pics/12_04_04_20_09_2019.jpg")+"";
+            return res;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+
+        }
+    }
+
+
 
 
 

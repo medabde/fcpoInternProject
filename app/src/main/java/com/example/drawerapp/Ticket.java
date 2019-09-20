@@ -14,7 +14,7 @@ public class Ticket {
     private String type;
     private Date date;
     private double prix;
-    private Bitmap pic;
+    private String picURL;
 
 
     public String getName() {
@@ -50,14 +50,6 @@ public class Ticket {
         this.prix = prix;
     }
 
-    public Bitmap getPic() {
-        return pic;
-    }
-
-    public void setPic(Bitmap pic) {
-        this.pic = pic;
-    }
-
     public int getId() {
         return id;
     }
@@ -72,5 +64,13 @@ public class Ticket {
 
     public void setIdUser(int idUser) {
         this.idUser = idUser;
+    }
+
+    public String getPicURL() {
+        return picURL;
+    }
+
+    public void setPicURL(String picURL) {
+        this.picURL = picURL;
     }
 }

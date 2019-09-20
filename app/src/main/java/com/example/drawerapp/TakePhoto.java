@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -39,6 +40,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -96,43 +99,10 @@ public class TakePhoto extends AppCompatActivity {
             mCameraSource.takePicture(null, new CameraSource.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] bytes) {
-                    try {
 
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        pic = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-
-                        Matrix matrix = new Matrix();
-
-                        matrix.postRotate(90);
-
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(pic, pic.getWidth(), pic.getHeight(), true);
-
-                        Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+                    new sendPic(bytes).execute();
 
 
-                        ticket.setPic(rotatedBitmap);
-
-
-                        File filesDir = TakePhoto.this.getFilesDir();
-                        File imageFile = new File(filesDir, "hello22.jpg");
-
-                        OutputStream os;
-                        try {
-                            os = new FileOutputStream(imageFile);
-                            rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
-                            os.flush();
-                            os.close();
-                            new sendPic().execute(imageFile.getAbsolutePath(),imageFile.getName());
-                        } catch (Exception e) {
-                            Log.d(TAG, "Error writing bitmap", e);
-                        }
-
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(TakePhoto.this, e.toString(), Toast.LENGTH_SHORT).show();
-                    }
 
                 }
             });
@@ -364,14 +334,15 @@ public class TakePhoto extends AppCompatActivity {
         @Override
         protected String doInBackground(String... urls) {
 
-          //  try {
+            boolean h=false;
+
+            File imageFile=new File(TakePhoto.this.getFilesDir(),"");
+
+            try {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        boolean status = false;
-                        // host – your FTP address
-                        // username & password – for your secured login
-                        // 21 default gateway for FTP
+                        boolean status;
                         status = ftpclient.ftpConnect("ftp.fcpo.ma", "tickets@fcpo.ma", "FCPO2019@", 21);
                         if (status) {
                             Log.d(TAG, "Connection Success");
@@ -380,20 +351,67 @@ public class TakePhoto extends AppCompatActivity {
                         }
                     }
                 }).start();
+            } catch(Exception e) {
+                Log.e(TAG, e.getMessage(), e);
+                return null;
+            }
 
 
-                boolean bool =ftpclient.ftpUpload(urls[0],urls[1],"/",TakePhoto.this);
-//            }
-//            catch(Exception e) {
-//                Log.e("ERROR", e.getMessage(), e);
-//                return null;
-//            }
-            return bool+"";
+
+            try {
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                pic = BitmapFactory.decodeByteArray(mybytes, 0, mybytes.length, options);
+
+                Matrix matrix = new Matrix();
+
+                matrix.postRotate(90);
+
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(pic, pic.getWidth(), pic.getHeight(), true);
+
+                Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+
+
+                rotatedBitmap = ThumbnailUtils.extractThumbnail(rotatedBitmap, 500, 500);
+
+
+                DateFormat dateFormat = new SimpleDateFormat("H_mm_ss_dd_MM_yyyy");
+                String name= dateFormat.format(new Date())+".jpg";
+                imageFile = new File(TakePhoto.this.getFilesDir(), name);
+
+                ticket.setPicURL("/phpAPI/pics/"+name);
+
+                OutputStream os;
+                try {
+                    os = new FileOutputStream(imageFile);
+                    rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                    os.flush();
+                    os.close();
+
+                } catch (Exception e) {
+                    Log.d(TAG, "Error writing bitmap", e);
+                }
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(TakePhoto.this, e.toString(), Toast.LENGTH_SHORT).show();
+            }
+
+
+
+            h=ftpclient.ftpUpload(imageFile.getAbsolutePath(),imageFile.getName(),"/phpAPI/pics/",TakePhoto.this);
+            return h+"";
         }
 
         @Override
         protected void onPostExecute(String s) {
-            Toast.makeText(TakePhoto.this, s, Toast.LENGTH_SHORT).show();
+            Log.d(TAG,ticket.getPicURL());
+            Toast.makeText(TakePhoto.this, "Uploaded", Toast.LENGTH_SHORT).show();
+            adapter.notifyDataSetChanged();
+
+
         }
     }
 

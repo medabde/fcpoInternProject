@@ -10,7 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -19,10 +20,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-import static com.example.drawerapp.Login.sharedPref;
 import static com.example.drawerapp.MainActivity.adapter;
 import static com.example.drawerapp.MainActivity.id101;
 import static com.example.drawerapp.MainActivity.tickets;
@@ -56,7 +53,13 @@ public class ModifyText extends AppCompatActivity {
         date.setText(ticket.getDate());
 
         ticketPic = findViewById(R.id.ticketPic);
-        ticketPic.setImageBitmap(ticket.getPic());
+        Picasso.get()
+                .load("https://tickets.fcpo.ma"+ticket.getPicURL())
+                .placeholder(R.drawable.ic_photo_black_24dp)
+                .resize(500,500)
+                .into(ticketPic);
+
+
 
         setTitle("Ticket Editor");
     }
