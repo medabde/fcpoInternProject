@@ -75,7 +75,7 @@ public class ModifyText extends AppCompatActivity {
         else ticket.setPrix(Double.parseDouble(editText3.getText().toString()));
 
         tickets.set(id101,ticket);
-        new RetrieveData().execute(ticket.getName(),ticket.getType(),ticket.getDate(),ticket.getPrix()+"",ticket.getIdUser()+"",ticket.getId()+"");
+        new RetrieveData().execute(ticket.getName(),ticket.getType(),ticket.getDate(),ticket.getPrix()+"",ticket.getIdUser()+"",ticket.getId()+"",tickets.get(id101).getPicURL());
 
         adapter.notifyDataSetChanged();
         finish();
@@ -90,7 +90,7 @@ public class ModifyText extends AppCompatActivity {
         @Override
         protected String doInBackground(String... urls) {
             try {
-                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/editTicket.php?nom="+urls[0]+"&type="+urls[1]+"&date="+urls[2]+"&prix="+urls[3]+"&idUser="+urls[4]+"&idTicket="+urls[5]);
+                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/editTicket.php?nom="+urls[0]+"&type="+urls[1]+"&date="+urls[2]+"&prix="+urls[3]+"&idUser="+urls[4]+"&idTicket="+urls[5]+"&picPath="+urls[6]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));

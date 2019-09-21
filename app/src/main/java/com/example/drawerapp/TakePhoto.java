@@ -91,6 +91,8 @@ public class TakePhoto extends AppCompatActivity {
 
 
     public void saveText(View view){
+        DateFormat dateFormat = new SimpleDateFormat("H_mm_ss_dd_MM_yyyy");
+        final String nameb= dateFormat.format(new Date())+".jpg";
         if (text == "") {
             Toast.makeText(TakePhoto.this, "You can't save an empty text", Toast.LENGTH_LONG).show();
 
@@ -99,9 +101,8 @@ public class TakePhoto extends AppCompatActivity {
             mCameraSource.takePicture(null, new CameraSource.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] bytes) {
-
-                    new sendPic(bytes).execute();
-
+                    Toast.makeText(TakePhoto.this, "Uploading ...", Toast.LENGTH_SHORT).show();
+                    new sendPic(bytes).execute(nameb);
 
 
                 }
@@ -143,7 +144,7 @@ public class TakePhoto extends AppCompatActivity {
                 if (nmbrs.get(i)>ticket.getPrix()) ticket.setPrix(nmbrs.get(i));
             }
 
-            new RetrieveData().execute(ticket.getName(),ticket.getType(),ticket.getDate(),ticket.getPrix()+"",ticket.getIdUser()+"");
+            new RetrieveData().execute(ticket.getName(),ticket.getType(),ticket.getDate(),ticket.getPrix()+"",ticket.getIdUser()+"","/phpAPI/pics/"+nameb);
             finish();
         }
     }
@@ -275,7 +276,7 @@ public class TakePhoto extends AppCompatActivity {
         @Override
         protected String doInBackground(String... urls) {
             try {
-                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/addTicket.php?nom="+urls[0]+"&type="+urls[1]+"&date="+urls[2]+"&prix="+urls[3]+"&idUser="+urls[4]);
+                URL url = new URL("https://tickets.fcpo.ma/phpAPI/ticket/addTicket.php?nom="+urls[0]+"&type="+urls[1]+"&date="+urls[2]+"&prix="+urls[3]+"&idUser="+urls[4]+"&picPath="+urls[5]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -308,7 +309,7 @@ public class TakePhoto extends AppCompatActivity {
                 else {
                     ticket.setId(id);
                     tickets.add(ticket);
-                    adapter.notifyDataSetChanged();
+                    //adapter.notifyDataSetChanged();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -375,11 +376,9 @@ public class TakePhoto extends AppCompatActivity {
                 rotatedBitmap = ThumbnailUtils.extractThumbnail(rotatedBitmap, 500, 500);
 
 
-                DateFormat dateFormat = new SimpleDateFormat("H_mm_ss_dd_MM_yyyy");
-                String name= dateFormat.format(new Date())+".jpg";
-                imageFile = new File(TakePhoto.this.getFilesDir(), name);
+                imageFile = new File(TakePhoto.this.getFilesDir(), urls[0]);
 
-                ticket.setPicURL("/phpAPI/pics/"+name);
+                ticket.setPicURL("/phpAPI/pics/"+urls[0]);
 
                 OutputStream os;
                 try {

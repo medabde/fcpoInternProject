@@ -16,6 +16,7 @@ import android.view.View;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -56,6 +57,7 @@ import java.util.Map;
 
 import static com.example.drawerapp.Login.sharedPref;
 import static java.lang.System.exit;
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -112,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
                                 //Yes button clicked
                                 int id = (int) adapterView.getItemIdAtPosition(b);
                                 new delete().execute(tickets.get(id).getId()+"",id+"");
+                                new deletePic().execute(tickets.get(id).getPicURL());
                                 tickets.remove(id);
                                 adapter.notifyDataSetChanged();
                                 break;
@@ -137,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         fab = findViewById(R.id.fab);
+        fab.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_create_black_24dp));
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -247,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
                     ticket.setType(arr.getJSONObject(i).getString("type"));
                     String date=arr.getJSONObject(i).getString("date");
                     SimpleDateFormat mydate=new SimpleDateFormat("yyyy-MM-dd");
+                    ticket.setPicURL(arr.getJSONObject(i).getString("picPath"));
                     ticket.setDate(mydate.parse(date));
                     ticket.setPrix(Double.valueOf(arr.getJSONObject(i).getString("price").trim()));
 
@@ -315,11 +320,13 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... urls) {
 
             try {
+                final String path=urls[0];
 
                 new Thread(new Runnable() {
                     public void run() {
                         boolean status = false;
                         status = ftpclient.ftpConnect("ftp.fcpo.ma", "tickets@fcpo.ma", "FCPO2019@", 21);
+                        ftpclient.ftpRemoveFile(path);
                         if (status) {
                             Log.d(TAG, "Connection Success");
                         } else {
@@ -327,19 +334,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }).start();
+
             } catch(Exception e) {
                 Log.e(TAG, e.getMessage(), e);
                 return null;
             }
 
-            String res=ftpclient.ftpRemoveFile("/phpAPI/pics/12_04_04_20_09_2019.jpg")+"";
-            return res;
+            return "done";
         }
 
         @Override
         protected void onPostExecute(String s) {
-            Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
-
+            //Toast.makeText(MainActivity.this, "deleted", Toast.LENGTH_SHORT).show();
         }
     }
 
