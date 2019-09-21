@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -79,7 +81,21 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        new RetrieveData().execute();
+        boolean connected = false;
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            //we are connected to a network
+            connected = true;
+        }
+
+
+
+        if (connected) new RetrieveData().execute();
+        else Toast.makeText(this, "NO CONNECTION ...", Toast.LENGTH_SHORT).show();
+
+
+
 
         listView=findViewById(R.id.ticket_list);
 
@@ -95,25 +111,24 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent myIntent = new Intent(MainActivity.this, ModifyText.class);
                 startActivity(myIntent);
-                id101=i;
+                id101 = i;
             }
         });
-
 
 
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(final AdapterView<?> adapterView, View view, int i, long l) {
-                final int b=i;
+                final int b = i;
 
                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
+                        switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
                                 //Yes button clicked
                                 int id = (int) adapterView.getItemIdAtPosition(b);
-                                new delete().execute(tickets.get(id).getId()+"",id+"");
+                                new delete().execute(tickets.get(id).getId() + "", id + "");
                                 new deletePic().execute(tickets.get(id).getPicURL());
                                 tickets.remove(id);
                                 adapter.notifyDataSetChanged();
@@ -132,13 +147,9 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton("No", dialogClickListener).show();
 
 
-
-
-
                 return true;
             }
         });
-
         fab = findViewById(R.id.fab);
         fab.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_create_black_24dp));
 
@@ -146,8 +157,20 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent myIntent = new Intent(MainActivity.this, TakePhoto.class);
-                startActivity(myIntent);
+
+                boolean connected = false;
+                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    //we are connected to a network
+                    connected = true;
+                }
+                if (connected){
+                    Intent myIntent = new Intent(MainActivity.this, TakePhoto.class);
+                    startActivity(myIntent);
+                }else Toast.makeText(MainActivity.this, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+
+
             }
         });
 
